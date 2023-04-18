@@ -21,6 +21,6 @@ source ${BASE_DIR}/.venv/bin/activate
 
 export IMAGE_NAME=final_task
 export CONFIG_PATH=${SOLUTION_FOLDER}/data/config.json
-export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}
+export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}.json
 
 python3 -m pytest --workers=auto --rootdir=${BASE_DIR} --verbose --junitxml=${BASE_DIR}/${TASK_NAME}.xml ${TESTS_FOLDER}/test_l05_final_task.py
