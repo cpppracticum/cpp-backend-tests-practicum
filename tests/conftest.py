@@ -1,6 +1,7 @@
 import os
 import json
 import pathlib
+import jsonschema
 
 import pytest
 
@@ -14,6 +15,8 @@ from cpp_server_api import CppServer as Server
 from cpp_server_api import ServerException
 
 START_PATTERN = '[Ss]erver (has )?started'
+JSON_SCHEMA_PATH = os.environ.get('JSON_SCHEMA_PATH')
+
 
 def get_maps_from_config_file(config: Path):
     return json.loads(config.read_text())['maps']
@@ -66,6 +69,15 @@ def _make_server(xprocess):
     server_port = os.environ.get('SERVER_PORT', '8080')
     config_path = os.environ.get('CONFIG_PATH')
 
+    if config_path is not None and JSON_SCHEMA_PATH is not None:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        with open(JSON_SCHEMA_PATH, 'r') as f:
+            schema = json.load(f)
+        print(config)
+        print(schema)
+        jsonschema.validate(config, schema)
+
     class Starter(ProcessStarter):
         pattern = START_PATTERN
         args = commands
@@ -89,6 +101,14 @@ def docker_server():
     image_name = os.environ['IMAGE_NAME']
     port = os.environ.get('SERVER_PORT', '8080')
     config_path = os.environ.get('CONFIG_PATH')
+
+    if config_path is not None and JSON_SCHEMA_PATH is not None:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        with open(JSON_SCHEMA_PATH, 'r') as f:
+            schema = json.load(f)
+        print()
+        jsonschema.validate(config, schema)
 
     extra_kwargs = {}
 

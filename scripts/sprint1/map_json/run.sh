@@ -7,8 +7,13 @@ function real_dir() {
 }
 SCRIPT_FOLDER=$(real_dir "$(dirname "$0")")
 
+SPRINT=sprint1
+TASK_NAME=map_json
+
 BASE_DIR=${SCRIPT_FOLDER}/../../../../
-SOLUTION_FOLDER=${BASE_DIR}/sprint1/problems/map_json/solution
+TESTS_FOLDER=${BASE_DIR}/cpp-backend-tests-practicum/tests
+
+SOLUTION_FOLDER=${BASE_DIR}/${SPRINT}/problems/${TASK_NAME}/solution
 
 bash ${SCRIPT_FOLDER}/build.sh || exit 1
 
@@ -18,4 +23,6 @@ export DELIVERY_APP=${SOLUTION_FOLDER}/build/bin/game_server
 export CONFIG_PATH=${SOLUTION_FOLDER}/data/config.json
 export COMMAND_RUN="${DELIVERY_APP} ${CONFIG_PATH}"
 
-python3 -m pytest --rootdir=${BASE_DIR} --verbose --junitxml=${BASE_DIR}/map_json.xml ${BASE_DIR}/cpp-backend-tests-practicum/tests/test_l04_map_json.py
+export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}
+
+python3 -m pytest --rootdir=${BASE_DIR} --verbose --junitxml=${BASE_DIR}/${TASK_NAME}.xml ${TESTS_FOLDER}/test_l04_map_json.py

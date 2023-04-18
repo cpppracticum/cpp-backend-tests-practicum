@@ -7,7 +7,12 @@ function real_dir() {
 }
 SCRIPT_FOLDER=$(real_dir "$(dirname "$0")")
 
+SPRINT=sprint2
+TASK_NAME=game_state
+
 BASE_DIR=${SCRIPT_FOLDER}/../../../..
+TESTS_FOLDER=${BASE_DIR}/cpp-backend-tests-practicum/tests
+
 SOLUTION_FOLDER=${BASE_DIR}/sprint2/problems/command_line/solution
 
 bash ${SCRIPT_FOLDER}/build.sh || exit 1
@@ -18,5 +23,6 @@ export CONFIG_PATH=${SOLUTION_FOLDER}/data/config.json
 export IMAGE_NAME=command_line
 export ENTRYPOINT=/app/game_server
 export CONTAINER_ARGS='--config-file /app/data/config.json --www-root /app/static/'
+export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}
 
-pytest --workers auto --junitxml=${BASE_DIR}/command_line.xml ${BASE_DIR}/cpp-backend-tests-practicum/tests/test_s02_command_line.py
+pytest --workers auto --junitxml=${BASE_DIR}/${TASK_NAME}.xml ${TESTS_FOLDER}/test_s02_command_line.py
