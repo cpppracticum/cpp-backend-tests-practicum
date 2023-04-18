@@ -23,6 +23,6 @@ export CONFIG_PATH=${SOLUTION_FOLDER}/data/config.json
 export IMAGE_NAME=command_line
 export ENTRYPOINT=/app/game_server
 export CONTAINER_ARGS='--config-file /app/data/config.json --www-root /app/static/'
-export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}
+export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}.json
 
 pytest --workers auto --junitxml=${BASE_DIR}/${TASK_NAME}.xml ${TESTS_FOLDER}/test_s02_command_line.py

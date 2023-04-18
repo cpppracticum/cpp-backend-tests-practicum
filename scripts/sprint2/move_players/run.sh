@@ -21,6 +21,6 @@ source ${BASE_DIR}/.venv/bin/activate
 
 export CONFIG_PATH=${SOLUTION_FOLDER}/data/config.json
 export IMAGE_NAME=move_players
-export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}
+export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}.json
 
 pytest --workers auto --junitxml=${BASE_DIR}/${TASK_NAME}.xml ${TESTS_FOLDER}/test_s02_move_players.py

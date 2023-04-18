@@ -25,6 +25,6 @@ export DELIVERY_APP=${SOLUTION_FOLDER}/build/bin/game_server
 export DATA_PATH=${SOLUTION_FOLDER}/static/
 
 export COMMAND_RUN="${DELIVERY_APP} ${CONFIG_PATH} ${DATA_PATH}"
-export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}
+export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}.json
 
 python3 -m pytest --rootdir=${BASE_DIR} --verbose --junitxml=${BASE_DIR}/${TASK_NAME}.xml ${TESTS_FOLDER}/test_s02_static_content.py
