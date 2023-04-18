@@ -7,7 +7,12 @@ function real_dir() {
 }
 SCRIPT_FOLDER=$(real_dir "$(dirname "$0")")
 
-BASE_DIR=${SCRIPT_FOLDER}/../../../../
+SPRINT=sprint4
+TASK_NAME=leave_game
+
+BASE_DIR=${SCRIPT_FOLDER}/../../../..
+TESTS_FOLDER=${BASE_DIR}/cpp-backend-tests-practicum/tests
+
 SOLUTION_FOLDER=${BASE_DIR}/sprint4/problems/leave_game/solution
 GET_IP=${SCRIPT_FOLDER}/../get_ip.py
 
@@ -28,7 +33,8 @@ export POSTGRES_PORT=5432
 
 export IMAGE_NAME=leave_game
 export CONFIG_PATH=${SOLUTION_FOLDER}/data/config.json
+export JSON_SCHEMA_PATH=${TESTS_FOLDER}/schemas/${SPRINT}/${TASK_NAME}.json
 
-pytest --workers auto --junitxml=${BASE_DIR}/leave_game.xml ${BASE_DIR}/cpp-backend-tests-practicum/tests/test_s04_leave_game.py
+pytest --workers auto --junitxml=${BASE_DIR}/${TASK_NAME}.xml ${TESTS_FOLDER}/test_s04_leave_game.py
 
 docker container stop postgres
