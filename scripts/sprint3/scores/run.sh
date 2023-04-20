@@ -8,7 +8,7 @@ function real_dir() {
 SCRIPT_FOLDER=$(real_dir "$(dirname "$0")")
 
 SPRINT=sprint3
-TASK_NAME=game_state
+TASK_NAME=scores
 
 BASE_DIR=${SCRIPT_FOLDER}/../../../../
 TESTS_FOLDER=${BASE_DIR}/cpp-backend-tests-practicum/tests
