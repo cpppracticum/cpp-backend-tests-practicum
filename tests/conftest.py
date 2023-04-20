@@ -1,8 +1,6 @@
 import os
 import json
 import pathlib
-import jsonschema
-
 import pytest
 
 from xprocess import ProcessStarter
@@ -17,6 +15,8 @@ from cpp_server_api import ServerException
 START_PATTERN = '[Ss]erver (has )?started'
 JSON_SCHEMA_PATH = os.environ.get('JSON_SCHEMA_PATH')
 
+if JSON_SCHEMA_PATH is not None:
+    import jsonschema
 
 def get_maps_from_config_file(config: Path):
     return json.loads(config.read_text())['maps']
