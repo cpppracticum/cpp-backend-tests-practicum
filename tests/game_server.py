@@ -131,12 +131,113 @@ class Player:
         return new_position
 
 
+class RoadLoader:
+    class RawRoad:
+        def __init__(self, dict_src: Optional[dict] = None):
+            if dict_src is None:
+                return
+            x0 = dict_src['x0']
+            y0 = dict_src['y0']
+            x1 = dict_src.get('x1', x0)
+            y1 = dict_src.get('y1', y0)
+            self.x0 = min(x0, x1)
+            self.x1 = max(x0, x1)
+            self.y0 = min(y0, y1)
+            self.y1 = max(y0, y1)
+            self.is_vertical = x0 == x1
+
+        def make_dict(self):
+            return {
+                'x0': self.x0,
+                'x1': self.x1,
+                'y0': self.y0,
+                'y1': self.y1
+            }
+
+        x0: int
+        y0: int
+        x1: int
+        y1: int
+        is_vertical: bool
+
+    def __init__(self, raw_roads: dict):
+        RawRoad = RoadLoader.RawRoad
+
+        self.vertical_roads: List[RawRoad] = []
+        self.horizontal_roads: List[RawRoad] = []
+        self.new_roads: List[RawRoad] = []
+
+        for raw_road in raw_roads:
+            road = RawRoad(raw_road)
+            if road.is_vertical:
+                self.vertical_roads.append(road)
+            else:
+                self.horizontal_roads.append(road)
+        self.handle_the_roads()
+
+    def handle_the_roads(self):
+        RawRoad = RoadLoader.RawRoad
+        RoadPairs = Optional[List[List[RawRoad]]]
+
+        def check_roads(roads: List[RawRoad]) -> RoadPairs:
+            for_merging = list()
+            for i in range(len(roads)):
+                road_1 = roads[i]
+                for road_2 in roads[i+1:]:
+                    # Проверяем совпадение концов коллинеарных дорог
+                    if road_1.is_vertical:
+                        if road_1.x0 == road_2.x0:
+                            if road_1.y0 == road_2.y1 or road_1.y1 == road_2.y0:
+                                for_merging.append([road_1, road_2])
+                    else:
+                        if road_1.y0 == road_2.y0:
+                            if road_1.x0 == road_2.x1 or road_1.x1 == road_2.x0:
+                                for_merging.append([road_1, road_2])
+
+            return for_merging
+
+        def merge_roads(road_1: RawRoad, road_2: RawRoad) -> RawRoad:
+            result = RawRoad()
+            result.x0 = min(road_1.x0, road_2.x0)
+            result.x1 = max(road_1.x1, road_2.x1)
+            result.y0 = min(road_1.y0, road_2.y0)
+            result.y1 = max(road_1.y1, road_2.y1)
+            result.is_vertical = road_1.is_vertical
+
+            return result
+
+        vertical_pairs = check_roads(self.vertical_roads)
+        horizontal_pairs = check_roads(self.horizontal_roads)
+
+        for pair in vertical_pairs:
+            self.new_roads.append(merge_roads(*pair))
+            self.vertical_roads.remove(pair[0])
+            self.vertical_roads.remove(pair[1])
+        for pair in horizontal_pairs:
+            self.new_roads.append(merge_roads(*pair))
+            self.horizontal_roads.remove(pair[0])
+            self.horizontal_roads.remove(pair[1])
+
+    def get_dicts(self):
+
+        result = list()
+        src = self.vertical_roads + self.horizontal_roads + self.new_roads
+        for road in src:
+            result.append(road.make_dict())
+        return result
+
+    vertical_roads: List[RawRoad] = list()
+    horizontal_roads: List[RawRoad] = list()
+    new_roads: List[RawRoad] = list()
+
+
 class GameSession:
 
     def __init__(self, game_map: dict, default_speed):
         self.map = game_map
         self.roads: List[Road] = list()
-        for r in game_map['roads']:
+        prepared_roads: List[dict] = RoadLoader(game_map['roads']).get_dicts()
+        for r in prepared_roads:
             road = Road(r)
             self.roads.append(road)
 
