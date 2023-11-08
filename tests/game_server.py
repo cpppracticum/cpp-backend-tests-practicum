@@ -219,7 +219,6 @@ class RoadLoader:
             self.horizontal_roads.remove(pair[1])
 
     def get_dicts(self) -> List[dict]:
-
         result = list()
         src = self.vertical_roads + self.horizontal_roads + self.new_roads
         for road in src:
