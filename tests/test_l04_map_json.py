@@ -1,56 +1,8 @@
 import pytest
 import conftest as utils
 
-ans_list = [
-    {
-        "id": "map1",
-        "name": "Map 1"
-    }
-]
+from conftest import get_config
 
-ans_info = {
-    "id": "map1",
-    "name": "Map 1",
-    "roads": [
-        {
-            "x0": 0,
-            "y0": 0,
-            "x1": 40
-        },
-        {
-            "x0": 40,
-            "y0": 0,
-            "y1": 30
-        },
-        {
-            "x0": 40,
-            "y0": 30,
-            "x1": 0
-        },
-        {
-            "x0": 0,
-            "y0": 0,
-            "y1": 30
-        }
-    ],
-    "buildings": [
-        {
-            "x": 5,
-            "y": 5,
-            "w": 30,
-            "h": 20
-        }
-    ],
-    "offices": [
-        {
-            "id": "o0",
-            "x": 40,
-            "y": 30,
-            "offsetX": 5,
-            "offsetY": 0
-        }
-    ]
-}
 
 map_not_found = {
     "code": "mapNotFound",
@@ -62,107 +14,44 @@ bad_request = {
     "message": "Bad request"
 }
 
-# 
-# @pytest.mark.parametrize('method', ['OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE'])
-# def test_maps_invalid_verb(server, method):
-#     header = {}
-#     request = 'api/v1/maps'
-#     res = server.request(method, header, f'/{request}')
-# 
-#     assert res.status_code == 405
-#     assert res.headers['content-type'] == 'application/json'
-#     assert res.headers['cache-control'] == 'no-cache'
-#     utils.check_allow(res.headers['allow'], {'GET', 'HEAD'})
-# 
-#     res_json = res.json()
-# 
-#     assert res_json['code'] == 'invalidMethod'
-#     assert res_json.get('message')
-# 
-# 
-# @pytest.mark.parametrize('method', ['GET', 'HEAD'])
-# def test_maps_success(server, method):
-#     header = {}
-#     request = 'api/v1/maps'
-#     res = server.request(method, header, f'/{request}')
-# 
-#     assert res.status_code == 200
-#     assert res.headers['content-type'] == 'application/json'
-#     expected = utils.get_maps_from_config(server.get_config())
-# 
-#     if method != 'HEAD':
-#         assert expected == utils.sort_by_id(res.json())
-#     else:
-#         assert '' == res.text
-# 
-# 
-# @pytest.mark.parametrize('method', ['OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE'])
-# def test_map_invalid_verb(server, method, map_dict):
-#     map_id = map_dict['id']
-#     header = {}
-#     request = f'api/v1/maps/{map_id}'
-#     res = server.request(method, header, f'/{request}')
-# 
-#     assert res.status_code == 405
-#     assert res.headers['content-type'] == 'application/json'
-#     assert res.headers['cache-control'] == 'no-cache'
-#     utils.check_allow(res.headers['allow'], {'GET', 'HEAD'})
-# 
-#     res_json = res.json()
-#     assert res_json['code'] == 'invalidMethod'
-#     assert res_json.get('message')
-# 
-# 
-# @pytest.mark.parametrize('method', ['GET', 'HEAD'])
-# @pytest.mark.randomize(min_length=1, max_length=15, str_attrs=('digits', 'ascii_letters'), ncalls=3)
-# def test_map_not_found(server, method, map_id: str):
-#     header = {}
-#     request = f'api/v1/maps/__{map_id}'
-#     res = server.request(method, header, f'/{request}')
-# 
-#     assert res.status_code == 404
-#     assert res.headers['content-type'] == 'application/json'
-#     assert res.headers['cache-control'] == 'no-cache'
-# 
-#     if method != 'HEAD':
-#         res_json = res.json()
-# 
-#         assert res_json['code'] == 'mapNotFound'
-#         assert res_json.get('message')
-#     else:
-#         assert '' == res.text
-# 
-# 
-# @pytest.mark.parametrize('method', ['GET', 'HEAD'])
-# def test_map_success(server, method, map_dict):
-#     map_dict.pop('dogSpeed', None)
-#     header = {}
-#     request = f'api/v1/maps/{map_dict["id"]}'
-#     res = server.request(method, header, f'/{request}')
-# 
-#     assert res.status_code == 200
-#     assert res.headers['content-type'] == 'application/json'
-# 
-#     if method != 'HEAD':
-#         assert map_dict == res.json()
-#     else:
-#         assert '' == res.text
+
+def get_maps_answer(config):
+    ans = []
+    print(config)
+    for m in config['maps']:
+        ans.append({
+            'id': m['id'],
+            'name': m['name']
+        })
+
+    return ans
+
+
+def get_map_info_ans(map_dict: dict):
+    keys = ['id', 'name', 'roads', 'buildings', 'offices']
+    ans = dict()
+    for k in keys:
+        ans.update({k: map_dict[k]})
+    return ans
 
 
 def test_list(server):
+    config = get_config()
     request = 'api/v1/maps'
     res = server.get(f'/{request}')
     assert res.status_code == 200
     assert res.headers['content-type'] == 'application/json'
-    assert res.json() == ans_list
+    assert res.json() == get_maps_answer(config)
 
 
-def test_info(server):
-    request = 'api/v1/maps/map1'
+def test_info(server, map_dict):
+    m = map_dict['id']
+    request = f"api/v1/maps/{m}"
     res = server.get(f'/{request}')
+    j = res.json()
     assert res.status_code == 200
     assert res.headers['content-type'] == 'application/json'
-    assert res.json() == ans_info
+    assert res.json() == get_map_info_ans(map_dict)
 
 
 def test_map_not_found(server):

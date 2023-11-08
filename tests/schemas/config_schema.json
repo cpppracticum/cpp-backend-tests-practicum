@@ -1,0 +1,172 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "type": "object",
+    "required": [
+        "maps"
+    ],
+    "properties": {
+        "defaultDogSpeed": {
+            "type": "number"
+        },
+        "lootGeneratorConfig": {
+            "type": "object",
+            "required": [
+                "period",
+                "probability"
+            ],
+            "properties": {
+                "period": {
+                    "type": "number"
+                },
+                "probability": {
+                    "type": "number"
+                }
+            }
+        },
+        "dogRetirementTime": {
+            "type": "number"
+        },
+        "maps": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "roads",
+                    "buildings",
+                    "offices"
+                ],
+                "properties": {
+                    "dogSpeed": {
+                        "type": "number"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "lootTypes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "name",
+                                "file",
+                                "type",
+                                "rotation",
+                                "color",
+                                "scale",
+                                "value"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "file": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "rotation": {
+                                    "type": "integer"
+                                },
+                                "color": {
+                                    "type": "string"
+                                },
+                                "scale": {
+                                    "type": "number"
+                                },
+                                "value": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "roads": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "x0",
+                                "y0"
+                            ],
+                            "properties": {
+                                "x0": {
+                                    "type": "integer"
+                                },
+                                "y0": {
+                                    "type": "integer"
+                                },
+                                "x1": {
+                                    "type": "integer"
+                                },
+                                "y1": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "buildings": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "x",
+                                "y",
+                                "w",
+                                "h"
+                            ],
+                            "properties": {
+                                "x": {
+                                    "type": "integer"
+                                },
+                                "y": {
+                                    "type": "integer"
+                                },
+                                "w": {
+                                    "type": "integer"
+                                },
+                                "h": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "offices": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "id",
+                                "x",
+                                "y",
+                                "offsetX",
+                                "offsetY"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "x": {
+                                    "type": "integer"
+                                },
+                                "y": {
+                                    "type": "integer"
+                                },
+                                "offsetX": {
+                                    "type": "integer"
+                                },
+                                "offsetY": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
