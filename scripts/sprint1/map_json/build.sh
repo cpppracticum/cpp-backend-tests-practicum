@@ -16,5 +16,5 @@ cd ${SOLUTION_FOLDER} || exit 1
 mkdir -p build
 cd build
 conan install ..
-cmake -D CMAKE_CXX_COMPILER=/usr/bin/g++-11 ..
+cmake -D CMAKE_CXX_COMPILER=/usr/bin/g++ ..
 cmake --build . -j $(nproc)
