@@ -23,6 +23,17 @@ def get_connection(db_name):
                             )
 
 
+def drop_db(db_name):
+    conn = get_connection(None)
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    with conn.cursor() as cur:
+        try:
+            cur.execute(f'drop database {db_name};')
+        except Exception as e:
+            print(e)
+    conn.close()
+
+
 def get_last_added_book(db_name):
     with get_connection(db_name) as conn:
         with conn.cursor() as cur:
@@ -202,4 +213,6 @@ def create_dbs():
 
 
 if __name__ == '__main__':
+    for name in ['empty_db', 'table_db', 'full_db']:
+        drop_db(name)
     create_dbs()
