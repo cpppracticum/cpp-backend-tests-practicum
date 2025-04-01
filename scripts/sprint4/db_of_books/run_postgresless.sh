@@ -13,6 +13,8 @@ GET_IP=${SCRIPT_FOLDER}/../get_ip.py
 
 bash $SCRIPT_FOLDER/build.sh || exit 1
 
+source ${BASE_DIR}/.venv/bin/activate
+
 export POSTGRES_USER=postgres
 export POSTGRES_PASSWORD=Mys3Cr3t
 export POSTGRES_HOST=postgres
