@@ -173,7 +173,8 @@ class CppServer:
                 server_domain = inspector.inspect_container(self.container.id)['Name'][1:]
             else:
                 # Иначе - по IP адресу контейнера
-                server_domain = inspector.inspect_container(self.container.id)['NetworkSettings']['IPAddress']
+                networks = inspector.inspect_container(self.container.id)['NetworkSettings']["Networks"]
+                server_domain = networks[next(iter(networks))]["IPAddress"]
 
             # Переприсваиваем url для запросов
             self.url = f'http://{server_domain}:{port}'
