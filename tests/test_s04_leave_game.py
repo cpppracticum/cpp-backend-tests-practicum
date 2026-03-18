@@ -54,6 +54,7 @@ def postgres_server():
     host = os.environ.get('POSTGRES_HOST', '172.17.0.2')
     postgres_port = os.environ.get('POSTGRES_PORT', '5432')
     docker_network = os.environ.get('DOCKER_NETWORK')
+    server_domain = os.environ.get('SERVER_DOMAIN', '127.0.0.1')
 
     client = docker.from_env()
     inspector = docker.APIClient()
@@ -83,10 +84,7 @@ def postgres_server():
         current_time = time.time()
         if current_time - start_time >= 3:
             raise ServerException('Cannot get the right start phrase from the container.', {'logs': logs})
-    if docker_network:
-        server_domain = name
-    else:
-        server_domain = inspector.inspect_container(container.id)['NetworkSettings']['IPAddress']
+
     server = Server(server_domain, '8080')
     server.container = container
     yield server
@@ -404,7 +402,7 @@ def test_reload_server(postgres_server, map_id):
 
     postgres_server.container.reload()
     reloaded_records = get_records(postgres_server)
-    
+
     compare(records, reloaded_records)
 
 
@@ -430,4 +428,3 @@ def test_a_records_selection(postgres_server, map_id, start: int, max_items: int
     records = get_records(postgres_server, start, max_items)
 
     compare(records, tribe_records)
-
