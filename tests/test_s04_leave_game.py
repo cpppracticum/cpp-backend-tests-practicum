@@ -53,7 +53,6 @@ def postgres_server():
     password = os.environ.get('POSTGRES_PASSWORD', 'Mys3Cr3t')
     host = os.environ.get('POSTGRES_HOST', '172.17.0.2')
     postgres_port = os.environ.get('POSTGRES_PORT', '5432')
-    docker_network = os.environ.get('DOCKER_NETWORK')
     server_domain = os.environ.get('SERVER_DOMAIN', '127.0.0.1')
 
     client = docker.from_env()
@@ -71,29 +70,10 @@ def postgres_server():
         },
         'name': name
     }
-    if docker_network:
-        kwargs['network'] = docker_network
 
-    container = client.containers.run(image_name, **kwargs)
-    pattern = get_start_pattern()
-    logs = container.logs().decode()
-    start_time = time.time()
-    while re.search(pattern, logs) is None:
-        time.sleep(1)
-        logs = container.logs().decode()
-        current_time = time.time()
-        if current_time - start_time >= 3:
-            raise ServerException('Cannot get the right start phrase from the container.', {'logs': logs})
-
-    server = Server(server_domain, '8080')
+    server = Server(server_domain, '8080', image_name, get_start_pattern(), **kwargs)
     server.container = container
     yield server
-    try:
-        inspector.stop(container.id)
-        inspector.remove_container(container.id)
-    except docker.errors.APIError:
-        pass
-
 
 def compare(records: List[dict], tribe_records: List[dict]):
     assert len(records) == len(tribe_records)
