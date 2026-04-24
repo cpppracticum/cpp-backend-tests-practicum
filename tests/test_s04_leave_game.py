@@ -72,8 +72,12 @@ def postgres_server():
     }
 
     server = Server(server_domain, '8080', image_name, get_start_pattern(), **kwargs)
-    server.container = container
     yield server
+    try:
+        inspector.stop(container.id)
+        inspector.remove_container(container.id)
+    except docker.errors.APIError:
+        pass
 
 def compare(records: List[dict], tribe_records: List[dict]):
     assert len(records) == len(tribe_records)
