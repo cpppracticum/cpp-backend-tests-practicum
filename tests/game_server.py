@@ -6,7 +6,7 @@ import math
 import random
 
 from typing import List, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from enum import Enum
 
@@ -104,7 +104,7 @@ class Player:
     token: str
     id: int
     position: Point
-    speed: Vector2D = Vector2D(0.0, 0.0)
+    speed: Vector2D = field(default_factory=lambda: Vector2D(0.0, 0.0))
     direction: Direction = Direction.U
 
     def set_speed(self, direction: str, speed: float):
