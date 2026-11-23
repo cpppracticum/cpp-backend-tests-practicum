@@ -1,5 +1,5 @@
 #pragma once
-#define BOOST_BEAST_USE_STD_STRING_VIEW
+#include "sdk.h"
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
@@ -19,19 +19,14 @@ namespace sys = boost::system;
 
 using namespace std::literals;
 
-inline void ReportError(beast::error_code ec, std::string_view what) {
-    std::cerr << what << ": "sv << ec.message() << std::endl;
-}
+void ReportError(beast::error_code ec, std::string_view what);
 
 class SessionBase {
 public:
     SessionBase(const SessionBase&) = delete;
     SessionBase& operator=(const SessionBase&) = delete;
 
-    void Run() {
-        net::dispatch(stream_.get_executor(),
-                      beast::bind_front_handler(&SessionBase::Read, GetSharedThis()));
-    }
+    void Run();
 
 protected:
     using HttpRequest = http::request<http::string_body>;
@@ -55,38 +50,10 @@ protected:
     }
 
 private:
-    void Read() {
-        request_ = {};
-        stream_.expires_after(30s);
-        http::async_read(
-            stream_, buffer_, request_,
-            beast::bind_front_handler(&SessionBase::OnRead, GetSharedThis()));
-    }
-
-    void OnRead(beast::error_code ec, [[maybe_unused]] std::size_t bytes_read) {
-        if (ec == http::error::end_of_stream) {
-            return Close();
-        }
-        if (ec) {
-            return ReportError(ec, "read"sv);
-        }
-        HandleRequest(std::move(request_));
-    }
-
-    void OnWrite(bool close, beast::error_code ec, [[maybe_unused]] std::size_t bytes_written) {
-        if (ec) {
-            return ReportError(ec, "write"sv);
-        }
-        if (close) {
-            return Close();
-        }
-        Read();
-    }
-
-    void Close() {
-        beast::error_code ec;
-        stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
-    }
+    void Read();
+    void OnRead(beast::error_code ec, [[maybe_unused]] std::size_t bytes_read);
+    void OnWrite(bool close, beast::error_code ec, [[maybe_unused]] std::size_t bytes_written);
+    void Close();
 
     virtual void HandleRequest(HttpRequest&& request) = 0;
     virtual std::shared_ptr<SessionBase> GetSharedThis() = 0;
@@ -167,4 +134,4 @@ void ServeHttp(net::io_context& ioc, const tcp::endpoint& endpoint, RequestHandl
     std::make_shared<MyListener>(ioc, endpoint, std::forward<RequestHandler>(handler))->Run();
 }
 
-}
+}  // namespace http_server

@@ -1,22 +1,18 @@
-#ifdef WIN32
-#include <sdkddkver.h>
-#endif
+#include "sdk.h"
 
-#include "http_server.h"
-
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <iostream>
 #include <thread>
 #include <vector>
 
-namespace net = boost::asio;
-using tcp = net::ip::tcp;
-namespace beast = boost::beast;
-namespace http = beast::http;
-using namespace std::literals;
+#include "json_loader.h"
+#include "request_handler.h"
 
-using StringRequest = http::request<http::string_body>;
-using StringResponse = http::response<http::string_body>;
+using namespace std::literals;
+namespace net = boost::asio;
+
+namespace {
 
 template <typename Fn>
 void RunWorkers(unsigned num_threads, const Fn& fn) {
@@ -29,59 +25,45 @@ void RunWorkers(unsigned num_threads, const Fn& fn) {
     fn();
 }
 
-StringResponse HandleRequest(StringRequest&& req) {
-    if (req.method() != http::verb::get && req.method() != http::verb::head) {
-        StringResponse response(http::status::method_not_allowed, req.version());
-        response.set(http::field::content_type, "text/html"sv);
-        response.set(http::field::allow, "GET, HEAD"sv);
-        response.body() = "Invalid method."s;
-        response.content_length(response.body().size());
-        response.keep_alive(req.keep_alive());
-        return response;
+}  // namespace
+
+int main(int argc, const char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: game_server <game-config-json>"sv << std::endl;
+        return EXIT_FAILURE;
     }
 
-    StringResponse response(http::status::ok, req.version());
-    response.set(http::field::content_type, "text/html"sv);
+    try {
+        model::Game game = json_loader::LoadGame(argv[1]);
 
-    std::string_view target = req.target();
-    if (!target.empty() && target.front() == '/') {
-        target.remove_prefix(1);
+        const unsigned num_threads = std::thread::hardware_concurrency();
+        net::io_context ioc(num_threads);
+
+        net::signal_set signals(ioc, SIGINT, SIGTERM);
+        signals.async_wait([&ioc](const boost::system::error_code& ec, [[maybe_unused]] int signal_number) {
+            if (!ec) {
+                ioc.stop();
+            }
+        });
+
+        http_handler::RequestHandler handler{game};
+
+        const auto address = net::ip::make_address("0.0.0.0");
+        constexpr net::ip::port_type port = 8080;
+
+        http_server::ServeHttp(ioc, {address, port}, [&handler](auto&& req, auto&& send) {
+            handler(std::forward<decltype(req)>(req), std::forward<decltype(send)>(send));
+        });
+
+        std::cout << "Server has started..."sv << std::endl;
+
+        RunWorkers(std::max(1u, num_threads), [&ioc] {
+            ioc.run();
+        });
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        return EXIT_FAILURE;
     }
-
-    std::string body = "Hello, "s + std::string(target);
-    response.content_length(body.size());
-
-    if (req.method() == http::verb::get) {
-        response.body() = std::move(body);
-    }
-
-    response.keep_alive(req.keep_alive());
-    return response;
-}
-
-int main() {
-    const unsigned num_threads = std::thread::hardware_concurrency();
-    net::io_context ioc(num_threads);
-
-    net::signal_set signals(ioc, SIGINT, SIGTERM);
-    signals.async_wait([&ioc](const boost::system::error_code& ec, [[maybe_unused]] int signal_number) {
-        if (!ec) {
-            ioc.stop();
-        }
-    });
-
-    const auto address = net::ip::make_address("0.0.0.0");
-    constexpr net::ip::port_type port = 8080;
-
-    http_server::ServeHttp(ioc, {address, port}, [](auto&& req, auto&& sender) {
-        sender(HandleRequest(std::forward<decltype(req)>(req)));
-    });
-
-    std::cout << "Server has started..."sv << std::endl;
-
-    RunWorkers(num_threads, [&ioc] {
-        ioc.run();
-    });
 
     return 0;
 }
