@@ -1,0 +1,6 @@
+[requires]
+boost/1.83.0
+
+[generators]
+cmake
+cmake_find_package
