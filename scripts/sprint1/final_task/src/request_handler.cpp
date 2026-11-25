@@ -30,48 +30,71 @@ StringResponse MakeErrorResponse(http::status status, std::string_view code, std
     return MakeJsonResponse(status, json::serialize(err), http_version, keep_alive, is_head);
 }
 
+json::object SerializeRoad(const model::Road& road) {
+    json::object r;
+    r["x0"sv] = road.GetStart().x;
+    r["y0"sv] = road.GetStart().y;
+    if (road.IsHorizontal()) {
+        r["x1"sv] = road.GetEnd().x;
+    } else {
+        r["y1"sv] = road.GetEnd().y;
+    }
+    return r;
+}
+
+json::object SerializeBuilding(const model::Building& bld) {
+    json::object b;
+    b["x"sv] = bld.GetBounds().position.x;
+    b["y"sv] = bld.GetBounds().position.y;
+    b["w"sv] = bld.GetBounds().size.width;
+    b["h"sv] = bld.GetBounds().size.height;
+    return b;
+}
+
+json::object SerializeOffice(const model::Office& off) {
+    json::object o;
+    o["id"sv] = *off.GetId();
+    o["x"sv] = off.GetPosition().x;
+    o["y"sv] = off.GetPosition().y;
+    o["offsetX"sv] = off.GetOffset().dx;
+    o["offsetY"sv] = off.GetOffset().dy;
+    return o;
+}
+
+json::array SerializeRoads(const model::Map::Roads& roads) {
+    json::array arr;
+    arr.reserve(roads.size());
+    for (const auto& road : roads) {
+        arr.push_back(SerializeRoad(road));
+    }
+    return arr;
+}
+
+json::array SerializeBuildings(const model::Map::Buildings& buildings) {
+    json::array arr;
+    arr.reserve(buildings.size());
+    for (const auto& bld : buildings) {
+        arr.push_back(SerializeBuilding(bld));
+    }
+    return arr;
+}
+
+json::array SerializeOffices(const model::Map::Offices& offices) {
+    json::array arr;
+    arr.reserve(offices.size());
+    for (const auto& off : offices) {
+        arr.push_back(SerializeOffice(off));
+    }
+    return arr;
+}
+
 json::value SerializeMapDetails(const model::Map& map) {
     json::object obj;
     obj["id"sv] = *map.GetId();
     obj["name"sv] = map.GetName();
-
-    json::array roads;
-    for (const auto& road : map.GetRoads()) {
-        json::object r;
-        r["x0"sv] = road.GetStart().x;
-        r["y0"sv] = road.GetStart().y;
-        if (road.IsHorizontal()) {
-            r["x1"sv] = road.GetEnd().x;
-        } else {
-            r["y1"sv] = road.GetEnd().y;
-        }
-        roads.push_back(std::move(r));
-    }
-    obj["roads"sv] = std::move(roads);
-
-    json::array buildings;
-    for (const auto& bld : map.GetBuildings()) {
-        json::object b;
-        b["x"sv] = bld.GetBounds().position.x;
-        b["y"sv] = bld.GetBounds().position.y;
-        b["w"sv] = bld.GetBounds().size.width;
-        b["h"sv] = bld.GetBounds().size.height;
-        buildings.push_back(std::move(b));
-    }
-    obj["buildings"sv] = std::move(buildings);
-
-    json::array offices;
-    for (const auto& off : map.GetOffices()) {
-        json::object o;
-        o["id"sv] = *off.GetId();
-        o["x"sv] = off.GetPosition().x;
-        o["y"sv] = off.GetPosition().y;
-        o["offsetX"sv] = off.GetOffset().dx;
-        o["offsetY"sv] = off.GetOffset().dy;
-        offices.push_back(std::move(o));
-    }
-    obj["offices"sv] = std::move(offices);
-
+    obj["roads"sv] = SerializeRoads(map.GetRoads());
+    obj["buildings"sv] = SerializeBuildings(map.GetBuildings());
+    obj["offices"sv] = SerializeOffices(map.GetOffices());
     return obj;
 }
 
