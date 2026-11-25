@@ -73,11 +73,21 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
 
     std::stringstream ss;
     ss << file.rdbuf();
-    json::value doc = json::parse(ss.str());
+
+    json::value doc;
+    try {
+        doc = json::parse(ss.str());
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Failed to parse JSON config '"s + json_path.string() + "': "s + e.what());
+    }
 
     model::Game game;
-    for (const auto& map_val : doc.as_object().at("maps"sv).as_array()) {
-        game.AddMap(ParseMap(map_val.as_object()));
+    try {
+        for (const auto& map_val : doc.as_object().at("maps"sv).as_array()) {
+            game.AddMap(ParseMap(map_val.as_object()));
+        }
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Invalid game config structure in '"s + json_path.string() + "': "s + e.what());
     }
     return game;
 }
